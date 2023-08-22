@@ -148,15 +148,15 @@ def normalizeSTD(df, num_segments, start_time, end_time, time_step, historical):
 def prepareModelInput(df_avg_run_time, w, s, pred_steps):
     num_samples = len(df_avg_run_time) - (pred_steps - 1)
     # Initialize an empty array to hold the input data
-    input_data_x = np.empty((num_samples, w, s, 1))
-    input_data_y = np.empty((num_samples, pred_steps, s, 1))
+    input_data_x = np.empty((num_samples, w, s, 1,1))
+    input_data_y = np.empty((num_samples, pred_steps, s, 1,1))
 
     for i in range(len(df_avg_run_time) - ((w + pred_steps) * s)):
         # Use array slicing to extract the required data
         sample_data_x = df_avg_run_time.iloc[i:i + w * s, 3].values
         sample_data_y = df_avg_run_time.iloc[i + (w * s):i + (w * s) + pred_steps * s, 3].values
-        reshaped_data_x = sample_data_x.reshape(w, s, 1)
-        reshaped_data_y = sample_data_y.reshape(pred_steps, s, 1)
+        reshaped_data_x = sample_data_x.reshape(w, s, 1,1)
+        reshaped_data_y = sample_data_y.reshape(pred_steps, s, 1,1)
         input_data_x[i] = reshaped_data_x
         input_data_y[i] = reshaped_data_y
     return input_data_x, input_data_y
@@ -188,15 +188,14 @@ def build_model(input_timesteps, output_timesteps, num_links):
 
     optimizer = RMSprop()
     model.compile(loss="mse", optimizer=optimizer)
-
     return model
 
 
 def trainModel(model, input_data_x, input_data_y, batch_size, epochs, validation_split):
     early_stopping = EarlyStopping(monitor='val_loss', patience=5, verbose=1, mode='auto', restore_best_weights=True)
-    history = model.fit(input_data_x, input_data_y, batch_size=batch_size, epochs=epochs,
-                        validation_split=validation_split, callbacks=[early_stopping], verbose=1)
-    return history
+    model.fit(input_data_x, input_data_y, batch_size=batch_size, epochs=epochs,
+                        validation_split=validation_split, callbacks=[early_stopping], verbose=1,**{"training": False})
+    return model
 
 
 def evaluateModel(model, x_test, y_test):
