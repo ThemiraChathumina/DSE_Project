@@ -13,4 +13,10 @@ def print_hi(name):
 if __name__ == '__main__':
     print_hi('PyCharm')
 
+"""
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+"""
+
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
